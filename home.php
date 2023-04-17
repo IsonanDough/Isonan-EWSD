@@ -1,10 +1,6 @@
 <?php
   include("UniFunc/connection.php");
 
-  $uid = $_SESSION['uid'];
-  $role = $_SESSION['role'];
-  $today = date("Y-m-d");
-
   function displayIdea($conn)
   {
     // Set the number of results to show per page
@@ -31,49 +27,50 @@
     $result = mysqli_query($conn, $sql);
     $i = 0;
   
-    foreach ($result as $row) {
-        $output = '';
-        $i = $i + 1;
-        $ideaID = $row['ideaID'];
-        $idea = $row['idea'];
-        $cat = $row['category'];
-        $user = $row['user'];
-        $anonymous = $row['anonymous'];
-        $date = $row['date'];
-        //$closure = $row['closure'];
-        $thumbsUp = $row['thumbsUp'];
-        $thumbsDown = $row['thumbsDown'];
-    
-        if($anonymous == 1)
-        {
-            $user = "Anonymous";
-        }
-        else
-        {
-            $nameSql = "SELECT username FROM account WHERE uid = '$user'";
-            $resultName = mysqli_query($conn, $nameSql);
-            $name = mysqli_fetch_all($resultName);
-            $user = $name[0][0];
-        }
-    
-        $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
-        $resultCat = mysqli_query($conn, $catSql);
-        $catName = mysqli_fetch_all($resultCat);
-        $cat = $catName[0][0];
-    
-        $output .=
-        '<td>'.$i.'</td>'.
-        '<td>'.$cat.'</td>'.
-        '<td>'.$idea.'</td>'.
-        '<td>'.$date.'</td>'.
-        '<td>'.$user.'</td>'.
-        '<td> <i class="bi bi-hand-thumbs-up-fill"></i> '.$thumbsUp.'</td>'.
-        '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
-        '<td>'.
-            '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
-        '</td>';
-    
-        echo "<tr>".$output."</tr>";
+    foreach ($result as $row)
+    {
+      $output = '';
+      $i = $i + 1;
+      $ideaID = $row['ideaID'];
+      $idea = $row['idea'];
+      $cat = $row['category'];
+      $userID = $row['user'];
+      $anonymous = $row['anonymous'];
+      $date = $row['date'];
+      //$closure = $row['closure'];
+      $thumbsUp = $row['thumbsUp'];
+      $thumbsDown = $row['thumbsDown'];
+  
+      if($anonymous == 1)
+      {
+        $user = "Anonymous";
+      }
+      else
+      {
+        $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
+        $resultName = mysqli_query($conn, $nameSql);
+        $name = mysqli_fetch_assoc($resultName);
+        $user = $name['username'];
+      }
+  
+      $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
+      $resultCat = mysqli_query($conn, $catSql);
+      $catName = mysqli_fetch_all($resultCat);
+      $cat = $catName[0][0];
+  
+      $output .=
+      '<td>'.$i.'</td>'.
+      '<td>'.$cat.'</td>'.
+      '<td>'.$idea.'</td>'.
+      '<td>'.$date.'</td>'.
+      '<td>'.$user.'</td>'.
+      '<td> <i class="bi bi-hand-thumbs-up-fill"></i> '.$thumbsUp.'</td>'.
+      '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
+      '<td>'.
+          '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
+      '</td>';
+  
+      echo "<tr>".$output."</tr>";
     }
   
     // Display pagination links
@@ -123,7 +120,7 @@
         $ideaID = $row['ideaID'];
         $idea = $row['idea'];
         $cat = $row['category'];
-        $user = $row['user'];
+        $userID = $row['user'];
         $anonymous = $row['anonymous'];
         $date = $row['date'];
         //$closure = $row['closure'];
@@ -136,10 +133,10 @@
         }
         else
         {
-            $nameSql = "SELECT username FROM account WHERE uid = '$user'";
-            $resultName = mysqli_query($conn, $nameSql);
-            $name = mysqli_fetch_all($resultName);
-            $user = $name[0][0];
+          $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
+          $resultName = mysqli_query($conn, $nameSql);
+          $name = mysqli_fetch_assoc($resultName);
+          $user = $name['username'];
         }
     
         $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
@@ -209,7 +206,7 @@
         $ideaID = $row['ideaID'];
         $idea = $row['idea'];
         $cat = $row['category'];
-        $user = $row['user'];
+        $userID = $row['user'];
         $anonymous = $row['anonymous'];
         $date = $row['date'];
         //$closure = $row['closure'];
@@ -222,10 +219,10 @@
         }
         else
         {
-            $nameSql = "SELECT username FROM account WHERE uid = '$user'";
-            $resultName = mysqli_query($conn, $nameSql);
-            $name = mysqli_fetch_all($resultName);
-            $user = $name[0][0];
+          $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
+          $resultName = mysqli_query($conn, $nameSql);
+          $name = mysqli_fetch_assoc($resultName);
+          $user = $name['username'];
         }
     
         $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
@@ -365,8 +362,6 @@
   <body>
     <?php include('UniFunc/NavBar.php'); ?>
     <div class="container">
-
-      <?php include('UniFunc/display.php'); ?>
 
       <h1>Home</h1>
 

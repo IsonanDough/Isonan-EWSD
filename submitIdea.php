@@ -1,17 +1,12 @@
 <?php
     include("UniFunc/connection.php");
 
-    $uid = $_SESSION['uid'];
-    $role = $_SESSION['role'];
-    $today = date("Y-m-d");
-
     if(isset($_POST['btnSubmit']))
     {
         $idea = $_POST['txtIdea'];
         $category = $_POST['txtCategory'];
         $date = $_POST['date'];
         $anonymous = 0;
-        $docName = $_POST['DocumentName'];
 
         if(isset($_POST['Anonymous']))
         {
@@ -31,9 +26,19 @@
             $date = null;
         }
 
-        if($_FILES["Documents"]["error"] == 4)
+        if( $_FILES["Documents"]["size"] == 0 )
         {
-            //alertMsg("Please Select Image");
+            $sql = "INSERT INTO idea (idea, category, user, anonymous,date,closure,file) VALUES ('$idea', '$category', '$uid', '$anonymous', '$today','$date', null)";
+            $result = mysqli_query($conn, $sql);
+
+            if($result)
+            {
+                $triggerAlert = 4;
+            }
+            else
+            {
+                $triggerAlert = 5;
+            }
         }
         else
         {
@@ -45,24 +50,32 @@
             $imageExtension = explode('.', $fileName);
             $imageExtension = strtolower(end($imageExtension));
 
-            if ( !in_array($imageExtension, $validImageExtension) )
+            if(!in_array($imageExtension, $validImageExtension))
             {
-                //alertMsg("Invalid Image Extension");
+                $triggerAlert = 2;
             }
             else if($fileSize > 1000000)
             {
-                //alertMsg("Image Size Is Too Large");
+                $triggerAlert = 3;
             }
             else
             {
-                $documents = $docName;
-                $documents .= '.' . $imageExtension;
+                $documents = $fileName;
                 move_uploaded_file($tmpName, 'Storage/' . $documents);
+
+                $sql = "INSERT INTO idea (idea, category, user, anonymous,date,closure,file) VALUES ('$idea', '$category', '$uid', '$anonymous', '$today','$date','$documents')";
+                $result = mysqli_query($conn, $sql);
+
+                if($result)
+                {
+                    $triggerAlert = 4;
+                }
+                else
+                {
+                    $triggerAlert = 5;
+                }
             }
         }
-
-        $sql = "INSERT INTO idea (idea, category, user, anonymous,date,closure,file) VALUES ('$idea', '$category', '$uid', '$anonymous', '$today','$date','$documents')";
-        $result = mysqli_query($conn, $sql);
     }
 
     function displayCat($conn)
@@ -85,7 +98,6 @@
 <body>
     <?php include('UniFunc/NavBar.php'); ?>
     <div style="width:55vw; margin-left:auto; margin-right:auto;">
-        <?php include('UniFunc/display.php'); ?>
         <h2>Idea Submission</h2>
         <div>
             <form method="post" enctype="multipart/form-data">
@@ -106,8 +118,7 @@
 
                 <div>
                     <label for="Documents" class="form-label">Documents (Only Accept <strong>JPG , JPEG , DOC , DOCX , PDF </strong>) and Less Than 10MB</label>
-                    <input type="file" class="form-control" id="Documents" name="Documents" accept=".jpg, .jpeg, .png, .doc, .docx, .pdf">
-                    <input class="form-control mt-2" name="DocumentName" placeholder="Document Name">
+                    <input type="file" class="form-control" id="Documents" name="Documents" accept=".jpg , .jpeg , .png , .doc , .docx , .pdf">
                 </div>
             
                 <div class="mt-2">
@@ -125,7 +136,35 @@
             
                 <button type="submit" class="mt-2 btn btn-primary row" name="btnSubmit">Submit</button>
             </form>
+
+            
         </div>
+        </br>
+        <?php
+            if(isset($triggerAlert))
+            {
+                if($triggerAlert == 1)
+                {
+                    alertMsg("Please Select Image","danger");
+                }
+                else if($triggerAlert == 2)
+                {
+                    alertMsg("Invalid Image Extension","danger");
+                }
+                else if($triggerAlert == 3)
+                {
+                    alertMsg("Image Size Is Too Large","danger");
+                }
+                else if($triggerAlert == 4)
+                {
+                    alertMsg("Idea Submitted","success");
+                }
+                else if($triggerAlert == 5)
+                {
+                    alertMsg("Idea Submission Failed","danger");
+                }
+            }
+        ?>
     </div>
 </body>
 </html>

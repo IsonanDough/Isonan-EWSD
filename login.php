@@ -1,6 +1,6 @@
 <?php
   include("UniFunc/connection.php");
-
+  
   if(isset($_POST['btnLogin']))
   {
     $email = $_POST['email'];
@@ -10,31 +10,37 @@
     {
       $sql = "SELECT password FROM account WHERE email = '$email'";
       $result = mysqli_query($conn, $sql);
-      $hash = mysqli_fetch_array($result);
-      $hash = $hash[0];
 
-      if(password_verify($password, $hash))
+      if(mysqli_num_rows($result) > 0)
       {
-        $sql = "SELECT uid,role FROM account WHERE email = '$email'";
-        $result = mysqli_query($conn, $sql);
-        $arr = mysqli_fetch_array($result);
-        $uid = $arr[0];
-        $role = $arr[1];
+        $hash = mysqli_fetch_array($result);
+        $hash = $hash[0];
 
-        $_SESSION['uid'] = $uid;
-        $_SESSION['role'] = $role;
+        if(password_verify($password, $hash))
+        {
+          $sql = "SELECT * FROM account WHERE email = '$email'";
+          $result = mysqli_query($conn, $sql);
+          $arr = mysqli_fetch_assoc($result);
 
-        header("Location: home.php");
-        exit();
+          $Dits = array($arr['uid'],$arr['role']);
+          $_SESSION['Dits'] = $Dits;
+
+          header("Location: home.php");
+          exit();
+        }
+        else
+        {
+          $triggerAlert = 1;
+        }
       }
       else
       {
-        //username or password is incorrect
+        $triggerAlert = 3;
       }
     }
     else
     {
-      //please enter email and password
+      $triggerAlert = 2;
     }
   }
 ?>
@@ -48,8 +54,11 @@
     <?php include('UniFunc/NavBarMin.php'); ?>
 
     <div class="container mt-5">
+      
       <div class="row justify-content-center">
+      
         <div class="col-md-6 col-lg-4">
+        
           <div class="card bg-light">
             <div class="card-body">
               <h5 class="card-title mb-3">Login</h5>
@@ -66,6 +75,24 @@
               </form>
             </div>
           </div>
+          <br>
+          <?php
+            if(isset($triggerAlert))
+            {
+              if($triggerAlert == 1)
+              {
+                alertMsg("Username or Password is incorrect", "danger");
+              }
+              else if($triggerAlert == 2)
+              {
+                alertMsg("Please enter Email and Password", "danger");
+              }
+              else if($triggerAlert == 3)
+              {
+                alertMsg("Email is not registered", "danger");
+              }
+            }
+          ?>
         </div>
       </div>
     </div> 

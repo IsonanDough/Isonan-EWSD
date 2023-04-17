@@ -1,10 +1,6 @@
 <?php
     include("UniFunc/connection.php");
 
-    $uid = $_SESSION['uid'];
-    $role = $_SESSION['role'];
-    $today = date("Y-m-d");
-
     $ideaID = $_SESSION['ideaID'];
 
     $sql = "SELECT * FROM idea WHERE ideaID = '$ideaID'";
@@ -19,7 +15,6 @@
     $closure = $row[0][6];
     $thumbsUp = $row[0][7];
     $thumbsDown = $row[0][8];
-    //$file = $row[0][9];
 
     if(isset($_POST['tUp']))
     {
@@ -38,11 +33,10 @@
     if(isset($_POST['btnSubmit']))
     {
         $comment = $_POST['comment'];
+        $anonymousComment = 0;
 
         if(isset($_POST['Anonymous']))
         {
-            $anonymousComment = 0;
-
             if($_POST['Anonymous'] == "on")
             {
                 $anonymousComment = 1;
@@ -51,10 +45,15 @@
             {
                 $anonymousComment = 0;
             }
-        }
 
-        $commentSql = "INSERT INTO comment (uid,ideaID, comment, commentDate, anonymous) VALUES ('$uid','$ideaID','$comment','$today','$anonymousComment')";
-        mysqli_query($conn, $commentSql);
+            $commentSql = "INSERT INTO comment (uid,ideaID, comment, commentDate, anonymous) VALUES ('$uid','$ideaID','$comment','$today','$anonymousComment')";
+            mysqli_query($conn, $commentSql);
+        }
+        else
+        {
+            $commentSql = "INSERT INTO comment (uid,ideaID, comment, commentDate, anonymous) VALUES ('$uid','$ideaID','$comment','$today','$anonymousComment')";
+            mysqli_query($conn, $commentSql);
+        }
     }
 
     function getComment($conn, $ideaID)
@@ -66,7 +65,6 @@
         {
             $uid = $row['uid'];
             $comment = $row['comment'];
-            //$commentDate = $row['commentDate'];
             $anonymous = $row['anonymous'];
 
             if($anonymous == 1)
@@ -82,7 +80,7 @@
             }
 
             echo '<div class="row mt-2 pt-1" style="border-top: 1px solid;">';
-            echo '<h4 class="row">Comment By : '.$name;
+            echo '<h5 class="row">Comment By : '.$name.'</h5>';
             echo '<div class="col-10">';
             echo '<p style="height:100px; width:500px; text-align:justify;">';
             echo $comment;
@@ -96,8 +94,6 @@
     if(isset($_GET['ideaID']))
     {
         $ideaID = $_GET['ideaID'];
-
-        // fetch file to download from database
         $sql = "SELECT file FROM idea WHERE ideaID=$ideaID";
         $result = mysqli_query($conn, $sql);
 
@@ -118,6 +114,19 @@
             exit;
         }
     }
+
+    function fileDisable($conn,$ideaID)
+    {
+        $sql = "SELECT * FROM idea WHERE ideaID=$ideaID";
+        $result = mysqli_query($conn, $sql);
+        $file = mysqli_fetch_assoc($result);
+        $fileYES = $file['file'];
+
+        if($fileYES == null)
+        {
+            echo "hidden";
+        }
+    }
 ?>
 
 <!doctype html>
@@ -128,7 +137,6 @@
 <body>
     <?php include('UniFunc/NavBar.php'); ?>
     <div class="mx-auto" style="width: 65%;">
-        <?php include('UniFunc/display.php'); ?>
         <form method="post" enctype="multipart/form-data">
             <div style="border: 1px solid; border-radius:10px; padding:20px;">
                 <div class="row">
@@ -182,7 +190,7 @@
                     <!-- To display file uploaded -->
                     <h4 class="col-3">Documents</h4>
                     <p class="col">
-                        : <a href="viewIdea.php?ideaID=<?php echo $ideaID ?>" class="btn btn-primary">Download</a>
+                        : <a href="viewIdea.php?ideaID=<?php echo $ideaID ?>" class="btn btn-primary"<?php fileDisable($conn,$ideaID); ?>>Download</a>
                     </p>
                 </div>
 

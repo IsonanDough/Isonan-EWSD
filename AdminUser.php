@@ -1,10 +1,6 @@
 <?php
     include("UniFunc/connection.php");
 
-    $uid = $_SESSION['uid'];
-    $role = $_SESSION['role'];
-    $today = date("Y-m-d");
-
     function displayUser($conn)
     {
         $sql = "SELECT * FROM account";
@@ -17,26 +13,26 @@
             $uid = $row['uid'];
             $email = $row['email'];
             $username = $row['username'];
-            $role = $row['role'];
+            $roleVal = $row['role'];
 
-            if($role == 2)
+            if($roleVal == 2)
             {
-                $role = "Admin";
+                $roleName = "Admin";
             }
-            else if($role == 1)
+            else if($roleVal == 1)
             {
-                $role = "Manager";
+                $roleName = "Manager";
             }
-            else
+            else if($roleVal == 0)
             {
-                $role = "Staff";
+                $roleName = "Staff";
             }
 
             $output .=
             "<td>".$uid."</td>".
             "<td>".$email."</td>".
             "<td>".$username."</td>".
-            "<td>".$role."</td>".
+            "<td>".$roleName."</td>".
             "<td>".
             '
             <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exampleModal'.$uid.'">
@@ -49,8 +45,8 @@
                             <h1 class="modal-title fs-5" id="exampleModalLabel">User Details</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            <form method="post">
+                        <form method="post">
+                            <div class="modal-body">
                                 <div class="form-floating mb-3">
                                     <input type="email" class="form-control" id="email" name="email'.$uid.'" placeholder="Email" value="'.$email.'">
                                     <label for="email">Email address</label>
@@ -63,22 +59,12 @@
                                     <input type="password" class="form-control" id="password" name="password'.$uid.'">
                                     <label for="password">Password</label>
                                 </div>
-                                <div class="form-floating mb-3">
-                                    <select name="Role'.$uid.'" required>
-                                        <option selected disabled>Please Select a Role</option>
-                                        <option value="0">Staff</option>
-                                        <option value="1">Manager</option>
-                                        <option value="2">Admin</option>
-                                    </select>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <form method="post">
-                                <button type="button" class="btn btn-danger" name="btnDel" value="'.$uid.'">DELETE</button>
-                                <button type="button" class="btn btn-primary" name="btnUpdate" value="'.$uid.'">UPDATE</button>
-                            </form>
-                        </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-danger" name="btnDel" value="'.$uid.'">DELETE</button>
+                                <button class="btn btn-primary" name="btnUpdate" value="'.$uid.'">UPDATE</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -99,11 +85,11 @@
 
         if($delResult)
         {
-            echo "<script>alert('User Deleted!');</script>";
+            $triggerAlert = 3;
         }
         else
         {
-            echo "<script>alert('User Deletion Failed!');</script>";
+            $triggerAlert = 4;
         }
     }
 
@@ -114,28 +100,28 @@
         $email = $_POST['email'.$updateUID];
         $username = $_POST['username'.$updateUID];
         $password = $_POST['password'.$updateUID];
-        $role = $_POST['Role'.$updateUID];
+        //$role = $_POST['Role'.$updateUID];
 
         if(empty($password))
         {
-            $updateSql = "UPDATE account SET email = '$email', username = '$username', role = '$role' WHERE uid = '$updateUID'";
+            $updateSql = "UPDATE account SET email = '$email', username = '$username' WHERE uid = '$updateUID'";
             $updateResult = mysqli_query($conn, $updateSql);
         }
         else
         {
             $hash = password_hash($password, PASSWORD_BCRYPT);
             
-            $updateSql = "UPDATE account SET email = '$email', username = '$username', password = '$hash', role = '$role' WHERE uid = '$updateUID'";
+            $updateSql = "UPDATE account SET email = '$email', username = '$username', password = '$hash' WHERE uid = '$updateUID'";
             $updateResult = mysqli_query($conn, $updateSql);
         }
 
         if($updateResult)
         {
-            echo "<script>alert('User Updated!');</script>";
+            $triggerAlert = 1;
         }
         else
         {
-            echo "<script>alert('User Update Failed!');</script>";
+            $triggerAlert = 2;
         }
     }
 
@@ -144,20 +130,20 @@
         $email = $_POST['email'];
         $username = $_POST['Username'];
         $password = $_POST['Password'];
-        $role = $_POST['Role'];
+        $roleVal = $_POST['Role'];
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
 
-        $addSql = "INSERT INTO account (email, username, password, role) VALUES ('$email', '$username', '$hash', '$role')";
+        $addSql = "INSERT INTO account (email, username, password, role) VALUES ('$email', '$username', '$hash', '$roleVal')";
         $addResult = mysqli_query($conn, $addSql);
 
         if($addResult)
         {
-            echo "<script>alert('User Added!');</script>";
+            $triggerAlert = 5;
         }
         else
         {
-            echo "<script>alert('User Addition Failed!');</script>";
+            $triggerAlert = 6;
         }
     }
 ?>
@@ -176,18 +162,46 @@
     <body>
         <?php include('UniFunc/NavBar.php'); ?>
         <div class="mt-1 mx-auto" style="width: 60vw;">
-        <?php include('UniFunc/display.php'); ?>
         <div class="mt-1">
   
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Add User
             </button>
+            <?php
+                if(isset($triggerAlert))
+                {
+                    if($triggerAlert == 1)
+                    {
+                        alertMsg("User Updated!","success");
+                    }
+                    else if($triggerAlert == 2)
+                    {
+                        alertMsg("User Update Failed!","danger");
+                    }
+                    else if($triggerAlert == 3)
+                    {
+                        alertMsg("User Deleted!","success");
+                    }
+                    else if($triggerAlert == 4)
+                    {
+                        alertMsg("User Deletion Failed!","danger");
+                    }
+                    else if($triggerAlert == 5)
+                    {
+                        alertMsg("User Added","success");
+                    }
+                    else if($triggerAlert == 6)
+                    {
+                        alertMsg("User Addition Failed","danger");
+                    }
+                }
+            ?>
 
             <div class="modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">New User</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form method="post">

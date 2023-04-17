@@ -1,5 +1,15 @@
 <?php
-    /*
+/*
+    include("UniFunc/connection.php");
+    $userID = 3;
+
+    $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
+    $resultName = mysqli_query($conn, $nameSql);
+    $name = mysqli_fetch_assoc($resultName);
+    $user = $name['username'];
+
+    echo $user;
+    
     $dbhost = "localhost";
     $dbuser = "root";
     $dbpass = "";
@@ -26,7 +36,7 @@
     {
 
     }
-    */
+    
     include("UniFunc/connection.php");
 
     $uid = $_SESSION['uid'];
@@ -118,7 +128,7 @@
         echo '</ul>';
         echo '</nav>';
       }
-      
+      */
 ?>
 
 <!doctype html>

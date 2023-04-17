@@ -1,10 +1,6 @@
 <?php
   include("UniFunc/connection.php");
-
-  $uid = $_SESSION['uid'];
-  $role = $_SESSION['role'];
-  $today = date("Y-m-d");
-
+  
   if(isset($_POST['addCat']))
   {
     $catName = $_POST['catName'];
@@ -45,7 +41,6 @@
   <body>
     <?php include('UniFunc/NavBar.php'); ?>
     <div class="mx-auto" style="width:50%;">
-      <?php include('UniFunc/display.php'); ?>
         <div class="col">
           <h1>Add Category</h1>
           <form method="post">
