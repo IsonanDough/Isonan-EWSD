@@ -11,7 +11,7 @@
       $sql = "SELECT password FROM account WHERE email = '$email'";
       $result = mysqli_query($conn, $sql);
 
-      if(mysqli_num_rows($result) > 0)
+      if(mysqli_num_rows($result) >= 1)
       {
         $hash = mysqli_fetch_array($result);
         $hash = $hash[0];

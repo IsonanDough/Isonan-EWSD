@@ -164,7 +164,7 @@
         <div class="mt-1 mx-auto" style="width: 60vw;">
         <div class="mt-1">
   
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUser">
                 Add User
             </button>
             <?php
@@ -197,11 +197,11 @@
                 }
             ?>
 
-            <div class="modal" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal" id="addUser" tabindex="-1" aria-labelledby="addUserLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">New User</h1>
+                            <h1 class="modal-title fs-5" id="addUserLabel">New User</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form method="post">

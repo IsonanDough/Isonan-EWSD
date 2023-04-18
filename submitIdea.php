@@ -28,6 +28,9 @@
 
         if( $_FILES["Documents"]["size"] == 0 )
         {
+            $dit = $_SESSION['Dits'];
+            $uid = $dit[0];
+            $today = date("Y-m-d");
             $sql = "INSERT INTO idea (idea, category, user, anonymous,date,closure,file) VALUES ('$idea', '$category', '$uid', '$anonymous', '$today','$date', null)";
             $result = mysqli_query($conn, $sql);
 
@@ -85,7 +88,17 @@
 
         foreach($result as $row)
         {
-            echo "<option value='".$row['catID']."'>".$row['catName']."</option>";
+            $today = date("Y-m-d");
+            $cDate = $row['catCloseDate'];
+
+            if($today > $cDate)
+            {
+                echo "<option value='".$row['catID']."' disabled>".$row['catName']."</option>";
+            }
+            else
+            {
+                echo "<option value='".$row['catID']."'>".$row['catName']."</option>";
+            }
         }   
     }
 ?>

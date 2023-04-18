@@ -68,6 +68,7 @@
       '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
       '<td>'.
           '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
+          '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>'.
       '</td>';
   
       echo "<tr>".$output."</tr>";
@@ -154,6 +155,7 @@
         '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
         '<td>'.
             '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
+            '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>'.
         '</td>';
     
         echo "<tr>".$output."</tr>";
@@ -240,6 +242,7 @@
         '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
         '<td>'.
             '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
+            '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>'.
         '</td>';
     
         echo "<tr>".$output."</tr>";
@@ -279,78 +282,23 @@
     $_SESSION['sort'] = "down";
   }
 
-  function test($conn)
+  if(isset($_POST['btnDeleteIdea']))
   {
-    if (isset($_GET['page_no']) && $_GET['page_no']!="")
+    $ideaID = $_POST['btnDeleteIdea'];
+    $sql = "DELETE FROM idea WHERE ideaID = '$ideaID'";
+    $result = mysqli_query($conn, $sql);
+
+    if($result)
     {
-      $page_no = $_GET['page_no'];
+      $triggerAlert = 1;
+      //echo '<script>alert("Idea Deleted")</script>';
     }
     else
     {
-      $page_no = 1;
+      $triggerAlert = 2;
+      //echo '<script>alert("Idea Not Deleted")</script>';
     }
 
-    $total_records_per_page = 5;
-
-    $offset = ($page_no-1) * $total_records_per_page;
-    $previous_page = $page_no - 1;
-    $next_page = $page_no + 1;
-    $adjacents = "2";
-
-    $result_count = mysqli_query($conn,"SELECT COUNT(*) As total_records FROM idea");
-    $total_records = mysqli_fetch_array($result_count);
-    $total_records = $total_records['total_records'];
-    $total_no_of_pages = ceil($total_records / $total_records_per_page);
-    $second_last = $total_no_of_pages - 1; // total page minus 1
-
-    $sql = "SELECT * FROM idea LIMIT $offset, $total_records_per_page";
-    $rows = mysqli_query($conn, $sql);
-    $i = 0;
-    foreach($rows as $row)
-    {
-      $output = '';
-      $i = $i + 1;
-      $ideaID = $row['ideaID'];
-      $idea = $row['idea'];
-      $cat = $row['category'];
-      $user = $row['user'];
-      $anonymous = $row['anonymous'];
-      $date = $row['date'];
-      //$closure = $row['closure'];
-      $thumbsUp = $row['thumbsUp'];
-      $thumbsDown = $row['thumbsDown'];
-
-      if($anonymous == 1)
-      {
-        $user = "Anonymous";
-      }
-      else
-      {
-        $nameSql = "SELECT username FROM account WHERE uid = '$user'";
-        $resultName = mysqli_query($conn, $nameSql);
-        $name = mysqli_fetch_all($resultName);
-        $user = $name[0][0];
-      }
-
-      $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
-      $resultCat = mysqli_query($conn, $catSql);
-      $catName = mysqli_fetch_all($resultCat);
-      $cat = $catName[0][0];
-
-      $output .=
-      '<td>'.$i.'</td>'.
-      '<td>'.$cat.'</td>'.
-      '<td>'.$idea.'</td>'.
-      '<td>'.$date.'</td>'.
-      '<td>'.$user.'</td>'.
-      '<td> <i class="bi bi-hand-thumbs-up-fill"></i> '.$thumbsUp.'</td>'.
-      '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
-      '<td>'.
-        '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
-      '</td>';
-
-      echo "<tr>".$output."</tr>";
-    }
   }
 ?>
 
@@ -415,6 +363,19 @@
             </tbody>
           </table>
         </form>
+        <?php
+          if(isset($triggerAlert))
+          {
+            if($triggerAlert == 1)
+            {
+              alertMsg("Idea Deleted","success");
+            }
+            else if($triggerAlert == 2)
+            {
+              alertMsg("Idea Not Deleted","danger");
+            }
+          }
+        ?>
       </div>
     </div>
   </body>

@@ -1,4 +1,4 @@
-<title>EWSD</title>
+<title>iDeate</title>
 <link rel="icon" type="image/x-icon" href="/project/EWSD/storage/icon.png">
 <!-- Need ? Probably Not -->
 <base target="_top">
