@@ -66,6 +66,10 @@
                 $documents = $fileName;
                 move_uploaded_file($tmpName, 'Storage/' . $documents);
 
+                $dit = $_SESSION['Dits'];
+                $uid = $dit[0];
+                $today = date("Y-m-d");
+
                 $sql = "INSERT INTO idea (idea, category, user, anonymous,date,closure,file) VALUES ('$idea', '$category', '$uid', '$anonymous', '$today','$date','$documents')";
                 $result = mysqli_query($conn, $sql);
 

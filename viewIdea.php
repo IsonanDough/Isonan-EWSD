@@ -35,6 +35,10 @@
         $comment = $_POST['comment'];
         $anonymousComment = 0;
 
+        $dit = $_SESSION['Dits'];
+        $uid = $dit[0];
+        $today = date("Y-m-d");
+
         if(isset($_POST['Anonymous']))
         {
             if($_POST['Anonymous'] == "on")
@@ -73,10 +77,10 @@
             }
             else
             {
-                $nameSql = "SELECT username FROM account WHERE uid = '$uid'";
+                $nameSql = "SELECT * FROM account WHERE uid = '$uid'";
                 $nameResult = mysqli_query($conn, $nameSql);
-                $nameRow = mysqli_fetch_all($nameResult);
-                $name = $nameRow[0][0];
+                $nameRow = mysqli_fetch_assoc($nameResult);
+                $name = $nameRow['username'];
             }
 
             echo '<div class="row mt-2 pt-1" style="border-top: 1px solid;">';
