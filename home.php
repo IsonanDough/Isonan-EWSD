@@ -1,13 +1,13 @@
 <?php
   include("UniFunc/connection.php");
 
-  function displayIdea($conn)
+  function displayIdea($conn,$role)
   {
     // Set the number of results to show per page
     $results_per_page = 5;
       
     // Get the total number of ideas
-    $sql_count = "SELECT COUNT(*) AS count FROM idea";
+    $sql_count = "SELECT COUNT(*) AS count FROM idea ORDER BY thumbsUp DESC";
     $result_count = mysqli_query($conn, $sql_count);
     $row_count = mysqli_fetch_assoc($result_count);
     $total_results = $row_count['count'];
@@ -21,59 +21,73 @@
   
     // Calculate the offset of the first result on the current page
     $offset = ($current_page - 1) * $results_per_page;
-  
-    // Get the results for the current page
+
     $sql = "SELECT * FROM idea LIMIT $offset, $results_per_page";
     $result = mysqli_query($conn, $sql);
+
     $i = 0;
-  
+
     foreach ($result as $row)
     {
       $output = '';
-      $i = $i + 1;
+      $i++;
       $ideaID = $row['ideaID'];
       $idea = $row['idea'];
       $cat = $row['category'];
       $userID = $row['user'];
       $anonymous = $row['anonymous'];
       $date = $row['date'];
-      //$closure = $row['closure'];
       $thumbsUp = $row['thumbsUp'];
       $thumbsDown = $row['thumbsDown'];
-  
-      if($anonymous == 1)
-      {
-        $user = "Anonymous";
-      }
-      else
+
+      $user = "Anonymous";
+      if($anonymous == 0)
       {
         $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
         $resultName = mysqli_query($conn, $nameSql);
         $name = mysqli_fetch_assoc($resultName);
+
         $user = $name['username'];
       }
-  
+
       $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
       $resultCat = mysqli_query($conn, $catSql);
-      $catName = mysqli_fetch_all($resultCat);
-      $cat = $catName[0][0];
-  
+      $catName = mysqli_fetch_assoc($resultCat);
+      $cat = $catName ? $catName['catName'] : '';
+
+      $deleteTrigger = true;
+
+      if(isset($role) && $role >= 1)
+      {
+        $deleteTrigger = false;
+      }
+
       $output .=
-      '<td>'.$i.'</td>'.
-      '<td>'.$cat.'</td>'.
-      '<td>'.$idea.'</td>'.
-      '<td>'.$date.'</td>'.
-      '<td>'.$user.'</td>'.
-      '<td> <i class="bi bi-hand-thumbs-up-fill"></i> '.$thumbsUp.'</td>'.
-      '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
-      '<td>'.
+        '<td>' . $i . '</td>'.
+        '<td>' . $cat . '</td>'.
+        '<td>' . $idea . '</td>'.
+        '<td>' . $date . '</td>'.
+        '<td>' . $user . '</td>'.
+        '<td> <i class="bi bi-hand-thumbs-up-fill"></i> ' . $thumbsUp . '</td>'.
+        '<td> <i class="bi bi-hand-thumbs-down-fill"></i> ' . $thumbsDown . '</td>'.
+        '<td>';
+
+      if($deleteTrigger == true)
+      {
+        $output .= 
+          '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>';
+      }
+      else if($deleteTrigger == false)
+      {
+        $output .= 
           '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
-          '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>'.
-      '</td>';
-  
+          '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>';
+      }
+
+      $output .= '</td>';
       echo "<tr>".$output."</tr>";
     }
-  
+
     // Display pagination links
     $total_pages = ceil($total_results / $results_per_page);
     echo '<nav aria-label="Page navigation">';
@@ -89,7 +103,8 @@
     echo '</nav>';
   }
 
-  function displayMostUp($conn)
+
+  function displayMostUp($conn,$role)
   {
     // Set the number of results to show per page
     $results_per_page = 5;
@@ -115,50 +130,65 @@
     $result = mysqli_query($conn, $sql);
     $i = 0;
   
-    foreach ($result as $row) {
-        $output = '';
-        $i = $i + 1;
-        $ideaID = $row['ideaID'];
-        $idea = $row['idea'];
-        $cat = $row['category'];
-        $userID = $row['user'];
-        $anonymous = $row['anonymous'];
-        $date = $row['date'];
-        //$closure = $row['closure'];
-        $thumbsUp = $row['thumbsUp'];
-        $thumbsDown = $row['thumbsDown'];
-    
-        if($anonymous == 1)
-        {
-            $user = "Anonymous";
-        }
-        else
-        {
-          $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
-          $resultName = mysqli_query($conn, $nameSql);
-          $name = mysqli_fetch_assoc($resultName);
-          $user = $name['username'];
-        }
-    
-        $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
-        $resultCat = mysqli_query($conn, $catSql);
-        $catName = mysqli_fetch_all($resultCat);
-        $cat = $catName[0][0];
-    
-        $output .=
-        '<td>'.$i.'</td>'.
-        '<td>'.$cat.'</td>'.
-        '<td>'.$idea.'</td>'.
-        '<td>'.$date.'</td>'.
-        '<td>'.$user.'</td>'.
-        '<td> <i class="bi bi-hand-thumbs-up-fill"></i> '.$thumbsUp.'</td>'.
-        '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
-        '<td>'.
-            '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
-            '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>'.
-        '</td>';
-    
-        echo "<tr>".$output."</tr>";
+    foreach ($result as $row)
+    {
+      $output = '';
+      $i++;
+      $ideaID = $row['ideaID'];
+      $idea = $row['idea'];
+      $cat = $row['category'];
+      $userID = $row['user'];
+      $anonymous = $row['anonymous'];
+      $date = $row['date'];
+      $thumbsUp = $row['thumbsUp'];
+      $thumbsDown = $row['thumbsDown'];
+
+      $user = "Anonymous";
+      if($anonymous == 0)
+      {
+        $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
+        $resultName = mysqli_query($conn, $nameSql);
+        $name = mysqli_fetch_assoc($resultName);
+
+        $user = $name['username'];
+      }
+
+      $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
+      $resultCat = mysqli_query($conn, $catSql);
+      $catName = mysqli_fetch_assoc($resultCat);
+      $cat = $catName ? $catName['catName'] : '';
+
+      $deleteTrigger = true;
+
+      if(isset($role) && $role >= 1)
+      {
+        $deleteTrigger = false;
+      }
+
+      $output .=
+        '<td>' . $i . '</td>'.
+        '<td>' . $cat . '</td>'.
+        '<td>' . $idea . '</td>'.
+        '<td>' . $date . '</td>'.
+        '<td>' . $user . '</td>'.
+        '<td> <i class="bi bi-hand-thumbs-up-fill"></i> ' . $thumbsUp . '</td>'.
+        '<td> <i class="bi bi-hand-thumbs-down-fill"></i> ' . $thumbsDown . '</td>'.
+        '<td>';
+
+      if($deleteTrigger == true)
+      {
+        $output .= 
+          '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>';
+      }
+      else if($deleteTrigger == false)
+      {
+        $output .= 
+          '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
+          '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>';
+      }
+
+      $output .= '</td>';
+      echo "<tr>".$output."</tr>";
     }
   
     // Display pagination links
@@ -176,7 +206,7 @@
     echo '</nav>';
   }
 
-  function displayMostDown($conn)
+  function displayMostDown($conn,$role)
   {
     // Set the number of results to show per page
     $results_per_page = 5;
@@ -202,50 +232,65 @@
     $result = mysqli_query($conn, $sql);
     $i = 0;
   
-    foreach ($result as $row) {
-        $output = '';
-        $i = $i + 1;
-        $ideaID = $row['ideaID'];
-        $idea = $row['idea'];
-        $cat = $row['category'];
-        $userID = $row['user'];
-        $anonymous = $row['anonymous'];
-        $date = $row['date'];
-        //$closure = $row['closure'];
-        $thumbsUp = $row['thumbsUp'];
-        $thumbsDown = $row['thumbsDown'];
-    
-        if($anonymous == 1)
-        {
-            $user = "Anonymous";
-        }
-        else
-        {
-          $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
-          $resultName = mysqli_query($conn, $nameSql);
-          $name = mysqli_fetch_assoc($resultName);
-          $user = $name['username'];
-        }
-    
-        $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
-        $resultCat = mysqli_query($conn, $catSql);
-        $catName = mysqli_fetch_all($resultCat);
-        $cat = $catName[0][0];
-    
-        $output .=
-        '<td>'.$i.'</td>'.
-        '<td>'.$cat.'</td>'.
-        '<td>'.$idea.'</td>'.
-        '<td>'.$date.'</td>'.
-        '<td>'.$user.'</td>'.
-        '<td> <i class="bi bi-hand-thumbs-up-fill"></i> '.$thumbsUp.'</td>'.
-        '<td> <i class="bi bi-hand-thumbs-down-fill"></i> '.$thumbsDown.'</td>'.
-        '<td>'.
-            '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
-            '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>'.
-        '</td>';
-    
-        echo "<tr>".$output."</tr>";
+    foreach ($result as $row)
+    {
+      $output = '';
+      $i++;
+      $ideaID = $row['ideaID'];
+      $idea = $row['idea'];
+      $cat = $row['category'];
+      $userID = $row['user'];
+      $anonymous = $row['anonymous'];
+      $date = $row['date'];
+      $thumbsUp = $row['thumbsUp'];
+      $thumbsDown = $row['thumbsDown'];
+
+      $user = "Anonymous";
+      if($anonymous == 0)
+      {
+        $nameSql = "SELECT * FROM account WHERE uid = '$userID'";
+        $resultName = mysqli_query($conn, $nameSql);
+        $name = mysqli_fetch_assoc($resultName);
+
+        $user = $name['username'];
+      }
+
+      $catSql = "SELECT catName FROM category WHERE catID = '$cat'";
+      $resultCat = mysqli_query($conn, $catSql);
+      $catName = mysqli_fetch_assoc($resultCat);
+      $cat = $catName ? $catName['catName'] : '';
+
+      $deleteTrigger = true;
+
+      if(isset($role) && $role >= 1)
+      {
+        $deleteTrigger = false;
+      }
+
+      $output .=
+        '<td>' . $i . '</td>'.
+        '<td>' . $cat . '</td>'.
+        '<td>' . $idea . '</td>'.
+        '<td>' . $date . '</td>'.
+        '<td>' . $user . '</td>'.
+        '<td> <i class="bi bi-hand-thumbs-up-fill"></i> ' . $thumbsUp . '</td>'.
+        '<td> <i class="bi bi-hand-thumbs-down-fill"></i> ' . $thumbsDown . '</td>'.
+        '<td>';
+
+      if($deleteTrigger == true)
+      {
+        $output .= 
+          '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>';
+      }
+      else if($deleteTrigger == false)
+      {
+        $output .= 
+          '<button class="btn btn-sm btn-info" name="ViewIdea" value="'.$ideaID.'">View</button>'.
+          '<button class="ms-1 btn btn-sm btn-danger" name="btnDeleteIdea" value="'.$ideaID.'">Delete</button>';
+      }
+
+      $output .= '</td>';
+      echo "<tr>".$output."</tr>";
     }
   
     // Display pagination links
@@ -291,12 +336,10 @@
     if($result)
     {
       $triggerAlert = 1;
-      //echo '<script>alert("Idea Deleted")</script>';
     }
     else
     {
       $triggerAlert = 2;
-      //echo '<script>alert("Idea Not Deleted")</script>';
     }
 
   }
@@ -342,21 +385,21 @@
                   if($_SESSION['sort'] == "up")
                   {
                     $_SESSION['sort'] = "none";
-                    displayMostUp($conn);
+                    displayMostUp($conn,$role);
                   }
                   else if($_SESSION['sort'] == "down")
                   {
                     $_SESSION['sort'] = "none";
-                    displayMostDown($conn);
+                    displayMostDown($conn,$role);
                   }
                   else
                   {
-                    displayIdea($conn);
+                    displayIdea($conn,$role);
                   }
                 }
                 else
                 {
-                  displayIdea($conn);
+                  displayIdea($conn,$role);
                 }
                 
               ?>
